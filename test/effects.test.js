@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { presets, cropRect, applyHaze } from '../dist/effects.js';
+import { presets, cropRect, applyHaze, applyDuotone, duotoneColors } from '../dist/effects.js';
 
 test('zero intensity preserves the original including transparent pixels', () => {
   const data = new Uint8ClampedArray([240, 122, 33, 255, 30, 90, 200, 0]);
@@ -9,7 +9,7 @@ test('zero intensity preserves the original including transparent pixels', () =>
   assert.deepEqual(data, before);
 });
 test('all four palettes produce distinct results and preserve alpha', () => {
-  const outputs = Object.values(presets).map((preset) => {
+  const outputs = Object.values(presets).filter((preset) => preset.type !== 'duotone').map((preset) => {
     const data = new Uint8ClampedArray([32, 100, 180, 200]);
     applyHaze(data, 1, 1, preset, 0.7);
     assert.equal(data[3], 200);
@@ -45,4 +45,62 @@ test('crop reaches both image edges and zoom changes framing', () => {
 test('invalid source sizes are rejected', () => {
   assert.throws(() => cropRect(0, 100), RangeError);
   assert.throws(() => cropRect(100, 100, 0.5), RangeError);
+});
+
+const ramp = () => new Uint8ClampedArray([0, 0, 0, 255, 128, 128, 128, 128, 255, 255, 255, 255]);
+
+test('duotone maps black and white to each reference color pair', () => {
+  for (const classic of [false, true]) {
+    const data = ramp();
+    applyDuotone(data, 1, { classic });
+    const pair = duotoneColors[classic ? 'classic' : 'contrast'];
+    assert.deepEqual([...data.slice(0, 3)], pair.shadow);
+    assert.deepEqual([...data.slice(8, 11)], pair.highlight);
+    assert.equal(data[7], 128);
+  }
+});
+
+test('reverse duotone swaps shadows and highlights in both color modes', () => {
+  for (const classic of [false, true]) {
+    const data = ramp();
+    applyDuotone(data, 1, { classic, reverse: true });
+    const pair = duotoneColors[classic ? 'classic' : 'contrast'];
+    assert.deepEqual([...data.slice(0, 3)], pair.highlight);
+    assert.deepEqual([...data.slice(8, 11)], pair.shadow);
+  }
+});
+
+test('duotone zero intensity preserves source and partial intensity blends', () => {
+  const before = ramp();
+  const zero = before.slice();
+  applyDuotone(zero, 0, { reverse: true });
+  assert.deepEqual(zero, before);
+  const full = before.slice();
+  const half = before.slice();
+  applyDuotone(full);
+  applyDuotone(half, 0.5);
+  for (let i = 0; i < before.length; i++) {
+    if (i % 4 === 3) assert.equal(half[i], before[i]);
+    else assert.ok(Math.abs(half[i] - (before[i] + full[i]) / 2) <= 1);
+  }
+});
+
+test('duotone stretches narrow tonal ranges and ignores transparent outliers', () => {
+  const data = new Uint8ClampedArray([255, 255, 255, 0, 90, 90, 90, 255, 120, 120, 120, 255]);
+  applyDuotone(data);
+  assert.deepEqual([...data.slice(0, 4)], [255, 255, 255, 0]);
+  assert.deepEqual([...data.slice(4, 7)], duotoneColors.contrast.shadow);
+  assert.deepEqual([...data.slice(8, 11)], duotoneColors.contrast.highlight);
+});
+
+test('flat and fully transparent images remain valid through duotone processing', () => {
+  const transparent = new Uint8ClampedArray([10, 20, 30, 0]);
+  const before = transparent.slice();
+  applyDuotone(transparent);
+  assert.deepEqual(transparent, before);
+  const flat = new Uint8ClampedArray([128, 128, 128, 255]);
+  applyDuotone(flat);
+  assert.ok(flat[0] > duotoneColors.contrast.shadow[0]);
+  assert.ok(flat[0] < duotoneColors.contrast.highlight[0]);
+  assert.equal(flat[3], 255);
 });

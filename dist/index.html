@@ -30,7 +30,7 @@
           <span class="image-chip" id="image-chip">01 / APOCALYPTIC ORANGE</span>
         </div>
         <div class="preview-toolbar"><button id="compare" type="button" aria-pressed="false">◐ View original</button><label class="guide-label"><input id="guide" type="checkbox"> Circle preview</label></div>
-        <p class="preview-note">An artistic haze effect, not a simulation of air quality.</p>
+        <p class="preview-note" id="preview-note">An artistic haze effect, not a simulation of air quality.</p>
       </div>
       <div class="controls-panel">
         <div class="step-title"><span>01</span><h2>Start with you.</h2></div>
@@ -39,13 +39,20 @@
         <p class="help">JPG, PNG or WebP · Up to 20 MB · Drag & drop works too</p>
         <p class="privacy-note"><span aria-hidden="true">⌁</span> Your photo stays on your device. No sign-up.</p>
         <div class="step-title palette-heading"><span>02</span><h2>Pick your atmosphere.</h2></div>
-        <div class="palettes" role="group" aria-label="Haze color presets">
+        <div class="palettes" role="group" aria-label="Photo color presets">
           <button type="button" class="palette selected" data-preset="orange" aria-pressed="true"><span class="swatch orange" aria-hidden="true"></span><span><strong>Apocalyptic orange</strong><small>A sky that shouldn't exist.</small></span><span class="palette-check" aria-hidden="true">↗</span></button>
           <button type="button" class="palette" data-preset="grey" aria-pressed="false"><span class="swatch grey" aria-hidden="true"></span><span><strong>Industrial smoke grey</strong><small>When the horizon disappears.</small></span><span class="palette-check" aria-hidden="true">↗</span></button>
           <button type="button" class="palette" data-preset="peat" aria-pressed="false"><span class="swatch peat" aria-hidden="true"></span><span><strong>Peatland sepia</strong><small>The earth, still smoldering.</small></span><span class="palette-check" aria-hidden="true">↗</span></button>
           <button type="button" class="palette" data-preset="ash" aria-pressed="false"><span class="swatch ash" aria-hidden="true"></span><span><strong>Afterburn blue</strong><small>The quiet after the fire.</small></span><span class="palette-check" aria-hidden="true">↗</span></button>
+          <button type="button" class="palette" data-preset="pinkGreen" aria-pressed="false"><span class="swatch pink-green" id="duotone-swatch" aria-hidden="true"></span><span><strong>Brave pink × Hero green</strong><small>Two colors. One voice.</small></span><span class="palette-check" aria-hidden="true">↗</span></button>
         </div>
-        <label class="range-label" for="intensity">Haze intensity <output id="intensity-value" for="intensity">70%</output></label>
+        <fieldset class="duotone-options" id="duotone-options" hidden>
+          <legend>Pink × green options</legend>
+          <label class="duotone-toggle"><input id="classic-colors" type="checkbox" aria-describedby="classic-description"><span><strong>Classic colors</strong><small id="classic-description">Higher-contrast pink / green</small></span></label>
+          <label class="duotone-toggle"><input id="reverse-duotone" type="checkbox" aria-describedby="reverse-description"><span><strong>Reverse duotone</strong><small id="reverse-description">Green shadows, pink highlights</small></span></label>
+          <p>Inspired by <a href="https://brave-pink-hero-green.lovable.app/" target="_blank" rel="noopener noreferrer">Brave Pink Hero Green ↗</a>. A solidarity duotone, separate from our haze palettes.</p>
+        </fieldset>
+        <label class="range-label" for="intensity"><span id="intensity-label">Haze intensity</span> <output id="intensity-value" for="intensity">70%</output></label>
         <input id="intensity" type="range" min="0" max="100" value="70">
         <details class="crop-controls"><summary>Fine-tune your crop <span aria-hidden="true">+</span></summary><label for="zoom">Zoom</label><input id="zoom" type="range" min="100" max="250" value="100"><label for="pan-x">Horizontal position</label><input id="pan-x" type="range" min="-100" max="100" value="0"><label for="pan-y">Vertical position</label><input id="pan-y" type="range" min="-100" max="100" value="0"><button type="button" id="reset-crop">Reset crop</button></details>
         <label class="message-label"><input id="message" type="checkbox" checked> Add “KARHUTLA BELUM USAI” to my picture</label>

@@ -1,4 +1,4 @@
-import { presets, cropRect, applyHaze } from './effects.js';
+import { presets, cropRect, applyHaze, applyDuotone } from './effects.js';
 
 const $ = (id) => document.getElementById(id);
 const canvas = $('preview');
@@ -10,6 +10,8 @@ let original = false;
 let loadVersion = 0;
 let renderFrame = 0;
 let downloading = false;
+let hazeIntensity = '70';
+let duotoneIntensity = '100';
 const caption = 'Asap bukan filter. Udara bersih itu hak. Foto profil ini adalah pengingat: karhutla belum usai. Mari terus peduli pada hutan, lahan, dan udara kita. #AsapBukanFilter #Karhutla';
 
 function status(message = '', error = false) {
@@ -26,7 +28,15 @@ function render() {
   ctx.drawImage(source, x, y, size, size, 0, 0, 1080, 1080);
   if (!original) {
     const pixels = ctx.getImageData(0, 0, 1080, 1080);
-    applyHaze(pixels.data, 1080, 1080, presets[selected], Number($('intensity').value) / 100);
+    const intensity = Number($('intensity').value) / 100;
+    if (presets[selected].type === 'duotone') {
+      applyDuotone(pixels.data, intensity, {
+        classic: $('classic-colors').checked,
+        reverse: $('reverse-duotone').checked,
+      });
+    } else {
+      applyHaze(pixels.data, 1080, 1080, presets[selected], intensity);
+    }
     ctx.putImageData(pixels, 0, 0);
     if ($('message').checked) {
       // Keep the campaign line within a circular profile crop's safe area.
@@ -51,7 +61,7 @@ function scheduleRender() {
 function setOriginal(value) {
   original = value;
   $('compare').setAttribute('aria-pressed', String(value));
-  $('compare').textContent = value ? '◐ Back to haze' : '◐ View original';
+  $('compare').textContent = value ? '◐ Back to effect' : '◐ View original';
   $('image-chip').textContent = value ? 'ORIGINAL / NO EFFECT' : `${presets[selected].number} / ${presets[selected].name.toUpperCase()}`;
 }
 
@@ -117,7 +127,15 @@ dropzone.addEventListener('drop', (event) => {
 });
 
 document.querySelectorAll('[data-preset]').forEach((button) => button.addEventListener('click', () => {
+  if (presets[selected].type === 'duotone') duotoneIntensity = $('intensity').value;
+  else hazeIntensity = $('intensity').value;
   selected = button.dataset.preset;
+  const duotone = presets[selected].type === 'duotone';
+  $('duotone-options').hidden = !duotone;
+  $('intensity-label').textContent = duotone ? 'Duotone intensity' : 'Haze intensity';
+  $('intensity').value = duotone ? duotoneIntensity : hazeIntensity;
+  $('intensity-value').value = `${$('intensity').value}%`;
+  $('preview-note').textContent = `An artistic ${duotone ? 'duotone' : 'haze'} effect, not a simulation of air quality.`;
   document.querySelectorAll('[data-preset]').forEach((item) => {
     const active = item === button;
     item.classList.toggle('selected', active);
@@ -126,6 +144,17 @@ document.querySelectorAll('[data-preset]').forEach((button) => button.addEventLi
   setOriginal(false);
   scheduleRender();
 }));
+function updateDuotoneOptions() {
+  const classic = $('classic-colors').checked;
+  const reverse = $('reverse-duotone').checked;
+  $('classic-description').textContent = classic ? 'Original pink / green shades' : 'Higher-contrast pink / green';
+  $('reverse-description').textContent = reverse ? 'Pink shadows, green highlights' : 'Green shadows, pink highlights';
+  $('duotone-swatch').classList.toggle('classic', classic);
+  $('duotone-swatch').classList.toggle('reversed', reverse);
+  setOriginal(false);
+  scheduleRender();
+}
+['classic-colors', 'reverse-duotone'].forEach((id) => $(id).addEventListener('change', updateDuotoneOptions));
 $('intensity').addEventListener('input', () => {
   $('intensity-value').value = `${$('intensity').value}%`;
   setOriginal(false);
@@ -144,13 +173,16 @@ $('download').addEventListener('click', () => {
   // Exports always include the chosen effect, even when comparing with the original.
   setOriginal(false);
   render();
+  const effectName = selected === 'pinkGreen'
+    ? `pink-green-${$('classic-colors').checked ? 'classic' : 'contrast'}${$('reverse-duotone').checked ? '-reversed' : ''}`
+    : selected;
   canvas.toBlob((blob) => {
     try {
       if (!blob) throw new Error('Export failed');
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `asap-bukan-filter-${selected}.png`;
+      link.download = `asap-bukan-filter-${effectName}.png`;
       document.body.append(link);
       link.click();
       link.remove();

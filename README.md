@@ -5,7 +5,8 @@ A small profile-picture studio to keep Indonesia's forest and land fires (karhut
 ## What works
 
 - Open a JPG, PNG or WebP locally, up to 20 MB and 50 megapixels.
-- Choose Apocalyptic orange, Industrial smoke grey, Peatland sepia or Afterburn blue.
+- Choose Apocalyptic orange, Industrial smoke grey, Peatland sepia, Afterburn blue, or Brave pink × Hero green.
+- The pink/green duotone includes higher-contrast and classic color pairs, a reverse switch, and its own remembered intensity. Haze and duotone settings stay separate.
 - Adjust intensity, zoom and framing; compare against the original.
 - Preview the circular profile crop; optionally add a campaign message.
 - Download a 1080 × 1080 PNG and copy an Indonesian campaign caption.
@@ -36,6 +37,15 @@ For a manual deploy, upload the contents of `dist` through Netlify's deploy inte
 
 See [Netlify's deployment documentation](https://docs.netlify.com/deploy/create-deploys/).
 
+## Pink × green reference
+
+Inspired by the user-provided [Brave Pink Hero Green](https://brave-pink-hero-green.lovable.app/) editor. This implementation adds its color pairs and Classic colors / Reverse duotone options to our existing editor; it does not reuse its app code or assets.
+
+- Higher-contrast (default): green shadows `#165027`, pink highlights `#F99FD2`.
+- Classic: green shadows `#1B602F`, pink highlights `#F784C5`.
+- Reverse swaps shadows and highlights. The image luminance range is normalized and shaped with a symmetric contrast curve, then mapped between the colors. Flat images use their absolute luminance, and fully transparent pixels do not affect normalization.
+- This palette is a solidarity duotone, not a haze simulation. The higher-contrast label describes relative luminance separation; it does not promise accessibility for every color-vision condition.
+
 ## Social profile import: next phase
 
 Provider-specific sign-in can make profile import possible. Google's OpenID Connect response can include a `picture` URL; it is not guaranteed. See [Google's documentation](https://developers.google.com/identity/openid-connect/openid-connect).
@@ -58,7 +68,7 @@ The colors are artistic interpretations, not measurements or a visualization of 
 
 ## Verification
 
-Automated checks cover zero-intensity identity, palette differences, alpha preservation, color behavior, and crop bounds across landscape, portrait and square sources. Browser verification completed: PNG upload, smoke-grey selection, intensity and crop controls, original comparison, circle guide, campaign overlay, PNG download, caption copying, privacy dialog and 390-pixel mobile layout. The downloaded PNG was verified as 1080 × 1080. Automated tests cover all four palettes; HEIC conversion, every browser/device and ad-network integration are not tested.
+Automated checks cover zero-intensity identity, palette differences, alpha preservation, color behavior, and crop bounds across landscape, portrait and square sources. Browser verification completed: PNG upload, smoke-grey selection, intensity and crop controls, original comparison, circle guide, campaign overlay, PNG download, caption copying, privacy dialog and 390-pixel mobile layout. The downloaded PNG was verified as 1080 × 1080. The new pink/green default preview was visually checked; its classic/reverse variants are covered by automated checks. A browser permission block prevented completing the new interactive export retest. Automated tests cover all five palettes; HEIC conversion, every browser/device and ad-network integration are not tested.
 
 ## License
 

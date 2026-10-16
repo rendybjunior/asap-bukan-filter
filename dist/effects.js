@@ -3,6 +3,13 @@ export const presets = Object.freeze({
   grey: { name: 'Industrial smoke grey', number: '02', tint: [166, 172, 165], saturation: 0.03, haze: 0.49 },
   peat: { name: 'Peatland sepia', number: '03', tint: [183, 151, 99], saturation: 0.18, haze: 0.4 },
   ash: { name: 'Afterburn blue', number: '04', tint: [147, 173, 185], saturation: 0.12, haze: 0.43 },
+  pinkGreen: { name: 'Brave pink × Hero green', number: '05', type: 'duotone' },
+});
+
+// Color pairs observed in the user-provided Brave Pink Hero Green reference.
+export const duotoneColors = Object.freeze({
+  contrast: { shadow: [22, 80, 39], highlight: [249, 159, 210] },
+  classic: { shadow: [27, 96, 47], highlight: [247, 132, 197] },
 });
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -32,6 +39,40 @@ export function applyHaze(data, width, height, preset, intensity) {
         const toned = desaturated * (1 - amount * 0.24) + preset.tint[channel] * amount * 0.24;
         data[i + channel] = toned * (1 - veil) + preset.tint[channel] * veil;
       }
+    }
+  }
+  return data;
+}
+
+// Stretch the visible luminance range, shape contrast, then map it between two
+// colors. Intensity blends that result with the source; transparent pixels do
+// not influence the image's tonal range. This is separate from atmospheric haze.
+export function applyDuotone(data, intensity = 1, { classic = false, reverse = false } = {}) {
+  const amount = clamp(intensity, 0, 1);
+  if (amount === 0) return data;
+  let darkest = Infinity;
+  let lightest = -Infinity;
+  const luminance = (i) => data[i] * 0.2126 + data[i + 1] * 0.7152 + data[i + 2] * 0.0722;
+  for (let i = 0; i < data.length; i += 4) {
+    if (!data[i + 3]) continue;
+    const light = luminance(i);
+    darkest = Math.min(darkest, light);
+    lightest = Math.max(lightest, light);
+  }
+  const pair = duotoneColors[classic ? 'classic' : 'contrast'];
+  const shadow = reverse ? pair.highlight : pair.shadow;
+  const highlight = reverse ? pair.shadow : pair.highlight;
+  const span = lightest - darkest;
+  for (let i = 0; i < data.length; i += 4) {
+    if (!data[i + 3]) continue;
+    const light = luminance(i);
+    const normalized = clamp(span > 0 ? (light - darkest) / span : light / 255, 0, 1);
+    const tone = normalized < 0.5
+      ? 0.5 * (2 * normalized) ** 1.8
+      : 1 - 0.5 * (2 * (1 - normalized)) ** 1.8;
+    for (let channel = 0; channel < 3; channel++) {
+      const mapped = shadow[channel] + (highlight[channel] - shadow[channel]) * tone;
+      data[i + channel] = Math.round(data[i + channel] * (1 - amount) + mapped * amount);
     }
   }
   return data;
