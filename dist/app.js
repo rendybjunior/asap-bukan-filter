@@ -1,4 +1,5 @@
-import { presets, cropRect, applyDuotone, applySmokeVeil } from './effects.js';
+import { presets } from './effects.js';
+import { renderPortrait } from './portrait.js';
 import { wrapCaption } from './caption.js';
 import { imageFile, canShareImage, shareImage } from './save.js';
 
@@ -22,26 +23,20 @@ function status(message = '', error = false) {
 
 function render() {
   if (!source || !ctx) return;
-  const { x, y, size } = cropRect(source.naturalWidth, source.naturalHeight,
-    Number($('zoom').value) / 100, Number($('pan-x').value) / 100, Number($('pan-y').value) / 100);
-  ctx.fillStyle = '#f5f1e8';
-  ctx.fillRect(0, 0, 1080, 1080);
-  ctx.drawImage(source, x, y, size, size, 0, 0, 1080, 1080);
+  const options = {
+    paletteId: selected,
+    intensity: Number($('intensity').value) / 100,
+    classic: $('classic-colors').checked,
+    reverse: $('reverse-duotone').checked,
+    zoom: Number($('zoom').value) / 100,
+    panX: Number($('pan-x').value) / 100,
+    panY: Number($('pan-y').value) / 100,
+  };
+  renderPortrait(canvas, source, { ...options, original });
+  document.querySelectorAll('[data-preview]').forEach((thumbnail) => {
+    renderPortrait(thumbnail, source, { ...options, paletteId: thumbnail.dataset.preview });
+  });
   if (!original) {
-    const pixels = ctx.getImageData(0, 0, 1080, 1080);
-    const intensity = Number($('intensity').value) / 100;
-    applyDuotone(pixels.data, intensity, {
-      palette: presets[selected],
-      classic: $('classic-colors').checked,
-      reverse: $('reverse-duotone').checked,
-    });
-    if (selected === 'grey') {
-      applySmokeVeil(pixels.data, 1080, 1080, intensity, {
-        classic: $('classic-colors').checked,
-        reverse: $('reverse-duotone').checked,
-      });
-    }
-    ctx.putImageData(pixels, 0, 0);
     const message = $('message-text').value.trim();
     if ($('message').checked && message) {
       let fontSize = 43;
@@ -165,10 +160,6 @@ function updateDuotoneOptions() {
   $('preview-note').textContent = selected === 'grey'
     ? 'Soft smoke with a clearer center. An artistic effect, not a simulation of air quality.'
     : 'An artistic duotone effect, not a simulation of air quality.';
-  document.querySelectorAll('.swatch').forEach((swatch) => {
-    swatch.classList.toggle('classic', classic);
-    swatch.classList.toggle('reversed', reverse);
-  });
   setOriginal(false);
   scheduleRender();
 }
@@ -197,7 +188,7 @@ $('download').addEventListener('click', () => {
     // Exports include the chosen effect even while comparing with the original.
     setOriginal(false);
     render();
-    const effectName = `${selected === 'pinkGreen' ? 'pink-green' : selected === 'grey' ? 'smoke-veil' : selected}-${$('classic-colors').checked ? 'classic' : 'contrast'}${$('reverse-duotone').checked ? '-reversed' : ''}`;
+    const effectName = `${presets[selected].slug}-${$('classic-colors').checked ? 'classic' : 'contrast'}${$('reverse-duotone').checked ? '-reversed' : ''}`;
     const filename = `asap-bukan-filter-${effectName}.png`;
     const dataUrl = canvas.toDataURL('image/png');
     preparedImage = null;

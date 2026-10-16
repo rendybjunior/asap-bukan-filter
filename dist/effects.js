@@ -1,18 +1,18 @@
 // Each palette maps the full image to two colors. Classic uses a softer pair.
 export const presets = Object.freeze({
-  orange: { name: 'Apocalyptic orange', number: '01', colorLabel: 'orange', shadowName: 'Burnt orange', highlightName: 'Bright orange', colors: {
+  orange: { name: 'Kuning Pedih', slug: 'kuning-pedih', number: '01', colorLabel: 'orange', shadowName: 'Burnt orange', highlightName: 'Bright orange', colors: {
     contrast: { shadow: [66, 20, 7], highlight: [255, 145, 35] },
     classic: { shadow: [110, 41, 14], highlight: [255, 177, 73] },
   } },
-  grey: { name: 'Smoke veil', number: '02', colorLabel: 'grey', shadowName: 'Charcoal', highlightName: 'Smoke grey', colors: {
+  grey: { name: 'Abu Sesak', slug: 'abu-sesak', number: '02', colorLabel: 'grey', shadowName: 'Charcoal', highlightName: 'Smoke grey', colors: {
     contrast: { shadow: [20, 20, 20], highlight: [230, 230, 230] },
     classic: { shadow: [60, 60, 60], highlight: [195, 195, 195] },
   } },
-  ihsg: { name: 'IHSG red', number: '03', colorLabel: 'red', shadowName: 'Deep red', highlightName: 'Bright red', colors: {
+  ihsg: { name: 'Merah IHSG', slug: 'merah-ihsg', number: '03', colorLabel: 'red', shadowName: 'Deep red', highlightName: 'Bright red', colors: {
     contrast: { shadow: [69, 3, 20], highlight: [255, 58, 77] },
     classic: { shadow: [118, 13, 34], highlight: [255, 104, 116] },
   } },
-  pinkGreen: { name: 'Brave pink × Hero green', number: '04', colorLabel: 'pink / green', shadowName: 'Green', highlightName: 'Pink', colors: {
+  pinkGreen: { name: 'Brave Pink x Hero Green', slug: 'brave-pink-hero-green', number: '04', colorLabel: 'pink / green', shadowName: 'Green', highlightName: 'Pink', colors: {
     contrast: { shadow: [22, 80, 39], highlight: [249, 159, 210] },
     classic: { shadow: [27, 96, 47], highlight: [247, 132, 197] },
   } },

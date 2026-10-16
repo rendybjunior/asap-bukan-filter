@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "description": "A private, browser-only haze profile picture studio for karhutla awareness.",
-  "scripts": { "dev": "node scripts/serve.mjs", "test": "node --test", "check": "node --check dist/app.js && node --check dist/effects.js && node --check dist/caption.js && node --check dist/save.js" },
+  "scripts": { "dev": "node scripts/serve.mjs", "test": "node --test", "check": "node --check dist/app.js && node --check dist/effects.js && node --check dist/caption.js && node --check dist/save.js && node --check dist/portrait.js" },
   "engines": { "node": ">=20" },
   "license": "MIT"
 }
