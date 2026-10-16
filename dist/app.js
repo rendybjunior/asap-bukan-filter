@@ -1,4 +1,5 @@
-import { presets, cropRect, applyHaze, applyDuotone } from './effects.js';
+import { presets, cropRect, applyDuotone } from './effects.js';
+import { wrapCaption } from './caption.js';
 
 const $ = (id) => document.getElementById(id);
 const canvas = $('preview');
@@ -10,8 +11,6 @@ let original = false;
 let loadVersion = 0;
 let renderFrame = 0;
 let downloading = false;
-let hazeIntensity = '70';
-let duotoneIntensity = '100';
 const caption = 'Asap bukan filter. Udara bersih itu hak. Foto profil ini adalah pengingat: karhutla belum usai. Mari terus peduli pada hutan, lahan, dan udara kita. #AsapBukanFilter #Karhutla';
 
 function status(message = '', error = false) {
@@ -29,26 +28,31 @@ function render() {
   if (!original) {
     const pixels = ctx.getImageData(0, 0, 1080, 1080);
     const intensity = Number($('intensity').value) / 100;
-    if (presets[selected].type === 'duotone') {
-      applyDuotone(pixels.data, intensity, {
-        classic: $('classic-colors').checked,
-        reverse: $('reverse-duotone').checked,
-      });
-    } else {
-      applyHaze(pixels.data, 1080, 1080, presets[selected], intensity);
-    }
+    applyDuotone(pixels.data, intensity, {
+      palette: presets[selected],
+      classic: $('classic-colors').checked,
+      reverse: $('reverse-duotone').checked,
+    });
     ctx.putImageData(pixels, 0, 0);
-    if ($('message').checked) {
-      // Keep the campaign line within a circular profile crop's safe area.
+    const message = $('message-text').value.trim();
+    if ($('message').checked && message) {
+      let fontSize = 43;
+      let lines;
+      do {
+        ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+        lines = wrapCaption(message, (text) => ctx.measureText(text).width, 790);
+        if (lines.length <= 2 || fontSize <= 25) break;
+        fontSize -= 2;
+      } while (true);
+      const lineHeight = fontSize * 1.25;
+      const bannerHeight = lines.length * lineHeight + 32;
       ctx.fillStyle = '#272822';
-      ctx.fillRect(100, 820, 880, 92);
+      ctx.fillRect(100, 800, 880, bannerHeight);
       ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
       ctx.fillStyle = '#f5f1e8';
-      ctx.font = 'bold 43px Arial, sans-serif';
-      ctx.fillText('KARHUTLA BELUM USAI', 540, 881, 825);
-      ctx.fillStyle = '#f5f1e8';
-      ctx.font = '19px monospace';
-      ctx.fillText('#AsapBukanFilter', 540, 948);
+      lines.forEach((line, index) => ctx.fillText(line, 540, 816 + lineHeight * (index + 0.5), 790));
+      ctx.textBaseline = 'alphabetic';
     }
   }
 }
@@ -98,7 +102,7 @@ async function loadFile(file) {
     resetCrop();
     setOriginal(false);
     $('preview-label').textContent = 'YOUR PHOTO / YOUR VOICE';
-    canvas.setAttribute('aria-label', 'Your uploaded photo with the selected haze effect. Use View original to compare.');
+    canvas.setAttribute('aria-label', 'Your uploaded photo with the selected duotone effect. Use View original to compare.');
     $('download-help').textContent = '1080 × 1080 PNG · Ready for your profile';
     render();
     status('Your photo is ready. Pick a palette and make it yours.');
@@ -127,15 +131,8 @@ dropzone.addEventListener('drop', (event) => {
 });
 
 document.querySelectorAll('[data-preset]').forEach((button) => button.addEventListener('click', () => {
-  if (presets[selected].type === 'duotone') duotoneIntensity = $('intensity').value;
-  else hazeIntensity = $('intensity').value;
   selected = button.dataset.preset;
-  const duotone = presets[selected].type === 'duotone';
-  $('duotone-options').hidden = !duotone;
-  $('intensity-label').textContent = duotone ? 'Duotone intensity' : 'Haze intensity';
-  $('intensity').value = duotone ? duotoneIntensity : hazeIntensity;
-  $('intensity-value').value = `${$('intensity').value}%`;
-  $('preview-note').textContent = `An artistic ${duotone ? 'duotone' : 'haze'} effect, not a simulation of air quality.`;
+  updateDuotoneOptions();
   document.querySelectorAll('[data-preset]').forEach((item) => {
     const active = item === button;
     item.classList.toggle('selected', active);
@@ -147,10 +144,15 @@ document.querySelectorAll('[data-preset]').forEach((button) => button.addEventLi
 function updateDuotoneOptions() {
   const classic = $('classic-colors').checked;
   const reverse = $('reverse-duotone').checked;
-  $('classic-description').textContent = classic ? 'Original pink / green shades' : 'Higher-contrast pink / green';
-  $('reverse-description').textContent = reverse ? 'Pink shadows, green highlights' : 'Green shadows, pink highlights';
-  $('duotone-swatch').classList.toggle('classic', classic);
-  $('duotone-swatch').classList.toggle('reversed', reverse);
+  const palette = presets[selected];
+  $('classic-description').textContent = `${classic ? 'Original' : 'Higher-contrast'} ${palette.colorLabel} shades`;
+  const shadow = reverse ? palette.highlightName : palette.shadowName;
+  const highlight = reverse ? palette.shadowName : palette.highlightName;
+  $('reverse-description').textContent = `${shadow} shadows, ${highlight.toLowerCase()} highlights`;
+  document.querySelectorAll('.swatch').forEach((swatch) => {
+    swatch.classList.toggle('classic', classic);
+    swatch.classList.toggle('reversed', reverse);
+  });
   setOriginal(false);
   scheduleRender();
 }
@@ -161,7 +163,12 @@ $('intensity').addEventListener('input', () => {
   scheduleRender();
 });
 ['zoom', 'pan-x', 'pan-y'].forEach((id) => $(id).addEventListener('input', scheduleRender));
-$('message').addEventListener('change', scheduleRender);
+$('message').addEventListener('change', () => {
+  $('custom-message').hidden = !$('message').checked;
+  setOriginal(false);
+  scheduleRender();
+});
+$('message-text').addEventListener('input', () => { setOriginal(false); scheduleRender(); });
 $('guide').addEventListener('change', () => { $('circle-guide').hidden = !$('guide').checked; });
 $('compare').addEventListener('click', () => { setOriginal(!original); scheduleRender(); });
 $('reset-crop').addEventListener('click', () => { resetCrop(); scheduleRender(); });
@@ -173,9 +180,7 @@ $('download').addEventListener('click', () => {
   // Exports always include the chosen effect, even when comparing with the original.
   setOriginal(false);
   render();
-  const effectName = selected === 'pinkGreen'
-    ? `pink-green-${$('classic-colors').checked ? 'classic' : 'contrast'}${$('reverse-duotone').checked ? '-reversed' : ''}`
-    : selected;
+  const effectName = `${selected === 'pinkGreen' ? 'pink-green' : selected}-${$('classic-colors').checked ? 'classic' : 'contrast'}${$('reverse-duotone').checked ? '-reversed' : ''}`;
   canvas.toBlob((blob) => {
     try {
       if (!blob) throw new Error('Export failed');

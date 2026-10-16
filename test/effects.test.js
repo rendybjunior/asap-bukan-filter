@@ -1,32 +1,31 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { presets, cropRect, applyHaze, applyDuotone, duotoneColors } from '../dist/effects.js';
+import { presets, cropRect, applyDuotone } from '../dist/effects.js';
 
-test('zero intensity preserves the original including transparent pixels', () => {
-  const data = new Uint8ClampedArray([240, 122, 33, 255, 30, 90, 200, 0]);
-  const before = data.slice();
-  applyHaze(data, 2, 1, presets.orange, 0);
-  assert.deepEqual(data, before);
+const duotoneColors = presets.pinkGreen.colors;
+
+test('zero intensity preserves the source and alpha for every palette', () => {
+  for (const palette of Object.values(presets)) {
+    const data = new Uint8ClampedArray([240, 122, 33, 255, 30, 90, 200, 0]);
+    const before = data.slice();
+    applyDuotone(data, 0, { palette });
+    assert.deepEqual(data, before);
+  }
 });
-test('all haze palettes produce distinct results and preserve alpha', () => {
-  const outputs = Object.values(presets).filter((preset) => preset.type !== 'duotone').map((preset) => {
-    const data = new Uint8ClampedArray([32, 100, 180, 200]);
-    applyHaze(data, 1, 1, preset, 0.7);
-    assert.equal(data[3], 200);
-    return [...data].join(',');
-  });
-  assert.equal(new Set(outputs).size, 3);
-});
-test('warm palettes shift neutral pixels to their colors, smoke grey removes most chroma', () => {
-  const orange = new Uint8ClampedArray([100, 100, 100, 255]);
-  applyHaze(orange, 1, 1, presets.orange, 1);
-  assert.ok(orange[0] > orange[1] && orange[1] > orange[2]);
-  const red = new Uint8ClampedArray([100, 100, 100, 255]);
-  applyHaze(red, 1, 1, presets.ihsg, 1);
-  assert.ok(red[0] > red[1] * 2 && red[0] > red[2] * 2);
-  const grey = new Uint8ClampedArray([255, 0, 0, 255]);
-  applyHaze(grey, 1, 1, presets.grey, 1);
-  assert.ok(Math.max(...grey.slice(0, 3)) - Math.min(...grey.slice(0, 3)) < 15);
+test('every palette fully maps shadows and highlights in classic and reverse modes', () => {
+  const outputs = new Set();
+  for (const palette of Object.values(presets)) {
+    for (const classic of [false, true]) for (const reverse of [false, true]) {
+      const data = new Uint8ClampedArray([0, 0, 0, 255, 128, 128, 128, 128, 255, 255, 255, 255]);
+      applyDuotone(data, 1, { palette, classic, reverse });
+      const pair = palette.colors[classic ? 'classic' : 'contrast'];
+      assert.deepEqual([...data.slice(0, 3)], reverse ? pair.highlight : pair.shadow);
+      assert.deepEqual([...data.slice(8, 11)], reverse ? pair.shadow : pair.highlight);
+      assert.equal(data[7], 128);
+      if (!classic && !reverse) outputs.add([...data].join(','));
+    }
+  }
+  assert.equal(outputs.size, 4);
 });
 test('crop stays inside landscape and portrait images for all supported controls', () => {
   for (const [width, height] of [[4000, 3000], [800, 2400], [1080, 1080]]) {

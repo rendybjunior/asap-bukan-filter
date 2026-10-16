@@ -1,14 +1,21 @@
+// Each palette maps the full image to two colors. Classic uses a softer pair.
 export const presets = Object.freeze({
-  orange: { name: 'Apocalyptic orange', number: '01', tint: [247, 133, 41], saturation: 0.38, haze: 0.38 },
-  grey: { name: 'Industrial smoke grey', number: '02', tint: [166, 172, 165], saturation: 0.03, haze: 0.49 },
-  ihsg: { name: 'IHSG red', number: '03', tint: [220, 34, 52], saturation: 0.08, haze: 0.44 },
-  pinkGreen: { name: 'Brave pink × Hero green', number: '04', type: 'duotone' },
-});
-
-// Color pairs observed in the user-provided Brave Pink Hero Green reference.
-export const duotoneColors = Object.freeze({
-  contrast: { shadow: [22, 80, 39], highlight: [249, 159, 210] },
-  classic: { shadow: [27, 96, 47], highlight: [247, 132, 197] },
+  orange: { name: 'Apocalyptic orange', number: '01', colorLabel: 'orange', shadowName: 'Burnt orange', highlightName: 'Bright orange', colors: {
+    contrast: { shadow: [66, 20, 7], highlight: [255, 145, 35] },
+    classic: { shadow: [110, 41, 14], highlight: [255, 177, 73] },
+  } },
+  grey: { name: 'Industrial smoke grey', number: '02', colorLabel: 'grey', shadowName: 'Charcoal', highlightName: 'Smoke grey', colors: {
+    contrast: { shadow: [30, 36, 39], highlight: [220, 225, 224] },
+    classic: { shadow: [73, 78, 78], highlight: [186, 192, 188] },
+  } },
+  ihsg: { name: 'IHSG red', number: '03', colorLabel: 'red', shadowName: 'Deep red', highlightName: 'Bright red', colors: {
+    contrast: { shadow: [69, 3, 20], highlight: [255, 58, 77] },
+    classic: { shadow: [118, 13, 34], highlight: [255, 104, 116] },
+  } },
+  pinkGreen: { name: 'Brave pink × Hero green', number: '04', colorLabel: 'pink / green', shadowName: 'Green', highlightName: 'Pink', colors: {
+    contrast: { shadow: [22, 80, 39], highlight: [249, 159, 210] },
+    classic: { shadow: [27, 96, 47], highlight: [247, 132, 197] },
+  } },
 });
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -21,32 +28,10 @@ export function cropRect(width, height, zoom = 1, panX = 0, panY = 0) {
     y: (height - size) * (clamp(panY, -1, 1) + 1) / 2, size };
 }
 
-// Blend desaturation, a warm/cool cast and a low-contrast atmospheric veil.
-// Zero intensity is an exact identity; alpha is always preserved.
-export function applyHaze(data, width, height, preset, intensity) {
-  const amount = clamp(intensity, 0, 1);
-  if (amount === 0) return data;
-  if (!preset || data.length !== width * height * 4) throw new RangeError('Invalid haze input');
-  for (let y = 0; y < height; y++) {
-    const veil = (preset.haze + 0.11 * (1 - y / height)) * amount;
-    for (let x = 0; x < width; x++) {
-      const i = (y * width + x) * 4;
-      const luma = data[i] * 0.2126 + data[i + 1] * 0.7152 + data[i + 2] * 0.0722;
-      const saturation = 1 - (1 - preset.saturation) * amount;
-      for (let channel = 0; channel < 3; channel++) {
-        const desaturated = luma + (data[i + channel] - luma) * saturation;
-        const toned = desaturated * (1 - amount * 0.24) + preset.tint[channel] * amount * 0.24;
-        data[i + channel] = toned * (1 - veil) + preset.tint[channel] * veil;
-      }
-    }
-  }
-  return data;
-}
-
 // Stretch the visible luminance range, shape contrast, then map it between two
 // colors. Intensity blends that result with the source; transparent pixels do
-// not influence the image's tonal range. This is separate from atmospheric haze.
-export function applyDuotone(data, intensity = 1, { classic = false, reverse = false } = {}) {
+// not influence the image's tonal range.
+export function applyDuotone(data, intensity = 1, { classic = false, reverse = false, palette = presets.pinkGreen } = {}) {
   const amount = clamp(intensity, 0, 1);
   if (amount === 0) return data;
   let darkest = Infinity;
@@ -58,7 +43,7 @@ export function applyDuotone(data, intensity = 1, { classic = false, reverse = f
     darkest = Math.min(darkest, light);
     lightest = Math.max(lightest, light);
   }
-  const pair = duotoneColors[classic ? 'classic' : 'contrast'];
+  const pair = palette.colors[classic ? 'classic' : 'contrast'];
   const shadow = reverse ? pair.highlight : pair.shadow;
   const highlight = reverse ? pair.shadow : pair.highlight;
   const span = lightest - darkest;
