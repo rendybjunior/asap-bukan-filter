@@ -58,7 +58,7 @@ The colors are artistic interpretations, not measurements or a visualization of 
 
 ## Verification
 
-Automated checks cover zero-intensity identity, palette differences, alpha preservation, color behavior, and crop bounds across landscape, portrait and square sources. Browser checks should include loading a real photo, all presets, comparison, crop controls, download, invalid files, mobile layout and caption/privacy dialogs.
+Automated checks cover zero-intensity identity, palette differences, alpha preservation, color behavior, and crop bounds across landscape, portrait and square sources. Browser verification completed: PNG upload, smoke-grey selection, intensity and crop controls, original comparison, circle guide, campaign overlay, PNG download, caption copying, privacy dialog and 390-pixel mobile layout. The downloaded PNG was verified as 1080 × 1080. Automated tests cover all four palettes; HEIC conversion, every browser/device and ad-network integration are not tested.
 
 ## License
 
