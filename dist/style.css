@@ -22,3 +22,6 @@ EOF
 .custom-message[hidden]{display:none}
 .custom-message label{display:block;font-size:11px;margin-bottom:8px}
 .custom-message input{width:100%;min-width:0;padding:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-size:12px;border-radius:0}
+
+footer .creator-credit{font-size:11px;color:var(--muted);text-underline-offset:3px;line-height:1.6}
+@media(max-width:600px){footer{flex-wrap:wrap;gap:14px}footer .creator-credit{font-size:10px}}
