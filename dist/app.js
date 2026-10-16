@@ -1,4 +1,4 @@
-import { presets, cropRect, applyDuotone } from './effects.js';
+import { presets, cropRect, applyDuotone, applySmokeVeil } from './effects.js';
 import { wrapCaption } from './caption.js';
 
 const $ = (id) => document.getElementById(id);
@@ -33,6 +33,12 @@ function render() {
       classic: $('classic-colors').checked,
       reverse: $('reverse-duotone').checked,
     });
+    if (selected === 'grey') {
+      applySmokeVeil(pixels.data, 1080, 1080, intensity, {
+        classic: $('classic-colors').checked,
+        reverse: $('reverse-duotone').checked,
+      });
+    }
     ctx.putImageData(pixels, 0, 0);
     const message = $('message-text').value.trim();
     if ($('message').checked && message) {
@@ -145,10 +151,18 @@ function updateDuotoneOptions() {
   const classic = $('classic-colors').checked;
   const reverse = $('reverse-duotone').checked;
   const palette = presets[selected];
-  $('classic-description').textContent = `${classic ? 'Original' : 'Higher-contrast'} ${palette.colorLabel} shades`;
+  $('classic-description').textContent = selected === 'grey'
+    ? (classic ? 'Softer charcoal and lighter smoke' : 'Deeper charcoal and denser smoke')
+    : `${classic ? 'Original' : 'Higher-contrast'} ${palette.colorLabel} shades`;
   const shadow = reverse ? palette.highlightName : palette.shadowName;
   const highlight = reverse ? palette.shadowName : palette.highlightName;
-  $('reverse-description').textContent = `${shadow} shadows, ${highlight.toLowerCase()} highlights`;
+  $('reverse-description').textContent = selected === 'grey'
+    ? (reverse ? 'Dark smoke over reversed tones' : 'Light smoke over charcoal tones')
+    : `${shadow} shadows, ${highlight.toLowerCase()} highlights`;
+  $('intensity-label').textContent = selected === 'grey' ? 'Smoke intensity' : 'Duotone intensity';
+  $('preview-note').textContent = selected === 'grey'
+    ? 'Soft smoke with a clearer center. An artistic effect, not a simulation of air quality.'
+    : 'An artistic duotone effect, not a simulation of air quality.';
   document.querySelectorAll('.swatch').forEach((swatch) => {
     swatch.classList.toggle('classic', classic);
     swatch.classList.toggle('reversed', reverse);
@@ -180,7 +194,7 @@ $('download').addEventListener('click', () => {
   // Exports always include the chosen effect, even when comparing with the original.
   setOriginal(false);
   render();
-  const effectName = `${selected === 'pinkGreen' ? 'pink-green' : selected}-${$('classic-colors').checked ? 'classic' : 'contrast'}${$('reverse-duotone').checked ? '-reversed' : ''}`;
+  const effectName = `${selected === 'pinkGreen' ? 'pink-green' : selected === 'grey' ? 'smoke-veil' : selected}-${$('classic-colors').checked ? 'classic' : 'contrast'}${$('reverse-duotone').checked ? '-reversed' : ''}`;
   canvas.toBlob((blob) => {
     try {
       if (!blob) throw new Error('Export failed');
