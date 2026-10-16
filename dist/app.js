@@ -1,5 +1,6 @@
 import { presets, cropRect, applyDuotone, applySmokeVeil } from './effects.js';
 import { wrapCaption } from './caption.js';
+import { imageFile, canShareImage, shareImage } from './save.js';
 
 const $ = (id) => document.getElementById(id);
 const canvas = $('preview');
@@ -11,6 +12,7 @@ let original = false;
 let loadVersion = 0;
 let renderFrame = 0;
 let downloading = false;
+let preparedImage = null;
 const caption = 'Asap bukan filter. Udara bersih itu hak. Foto profil ini adalah pengingat: karhutla belum usai. Mari terus peduli pada hutan, lahan, dan udara kita. #AsapBukanFilter #Karhutla';
 
 function status(message = '', error = false) {
@@ -191,30 +193,62 @@ $('download').addEventListener('click', () => {
   if (!uploaded || downloading) return;
   downloading = true;
   $('download').disabled = true;
-  // Exports always include the chosen effect, even when comparing with the original.
-  setOriginal(false);
-  render();
-  const effectName = `${selected === 'pinkGreen' ? 'pink-green' : selected === 'grey' ? 'smoke-veil' : selected}-${$('classic-colors').checked ? 'classic' : 'contrast'}${$('reverse-duotone').checked ? '-reversed' : ''}`;
-  canvas.toBlob((blob) => {
-    try {
-      if (!blob) throw new Error('Export failed');
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `asap-bukan-filter-${effectName}.png`;
-      document.body.append(link);
-      link.click();
-      link.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
-      status('Your PNG is ready. Check your downloads, then set it as your profile picture.');
-    } catch {
-      status('The download could not be prepared. Please try again.', true);
-    } finally {
-      downloading = false;
-      $('download').disabled = !uploaded;
-    }
-  }, 'image/png');
+  try {
+    // Exports include the chosen effect even while comparing with the original.
+    setOriginal(false);
+    render();
+    const effectName = `${selected === 'pinkGreen' ? 'pink-green' : selected === 'grey' ? 'smoke-veil' : selected}-${$('classic-colors').checked ? 'classic' : 'contrast'}${$('reverse-duotone').checked ? '-reversed' : ''}`;
+    const filename = `asap-bukan-filter-${effectName}.png`;
+    const dataUrl = canvas.toDataURL('image/png');
+    preparedImage = null;
+    // Missing file-sharing support must never prevent the image fallback.
+    try { preparedImage = imageFile(dataUrl, filename); } catch { /* Use the image and download link. */ }
+    $('save-image').src = dataUrl;
+    $('save-download').href = dataUrl;
+    $('save-download').download = filename;
+    $('save-share').hidden = !canShareImage(navigator, preparedImage);
+    $('save-status').textContent = '';
+    $('save-dialog').showModal();
+    status('Your image is ready. Choose how to save it in the preview.');
+  } catch {
+    status('The image could not be prepared. Please try again.', true);
+  } finally {
+    downloading = false;
+    $('download').disabled = !uploaded;
+  }
 });
+
+$('save-share').addEventListener('click', async () => {
+  $('save-share').disabled = true;
+  const result = await shareImage(navigator, preparedImage);
+  $('save-share').disabled = false;
+  $('save-status').textContent = {
+    shared: 'Share menu closed. Your device handles saving; you can also touch and hold the image below.',
+    cancelled: 'Sharing cancelled. You can still download or touch and hold the image.',
+    unavailable: 'Sharing is not available here. Try downloading or touch and hold the image.',
+    failed: 'This browser blocked sharing. Try downloading or touch and hold the image. If needed, open this page in Safari or Chrome.',
+  }[result];
+});
+$('save-download').addEventListener('click', () => {
+  $('save-status').textContent = 'Download requested. If nothing happens, touch and hold the image to see your save options.';
+});
+$('save-close').addEventListener('click', () => $('save-dialog').close());
+$('save-dialog').addEventListener('close', () => {
+  $('save-image').removeAttribute('src');
+  $('save-download').removeAttribute('href');
+  preparedImage = null;
+});
+$('save-copy-link').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText($('save-page-link').value);
+    $('save-status').textContent = 'Page link copied. Paste it into Safari or Chrome. You may need to upload your photo again.';
+  } catch {
+    $('save-page-link').focus();
+    $('save-page-link').select();
+    $('save-status').textContent = 'Select and copy the page link, then paste it into Safari or Chrome.';
+  }
+});
+$('save-page-link').value = window.location.href.split('#')[0].split('?')[0];
 
 $('copy-caption').addEventListener('click', async () => {
   try {

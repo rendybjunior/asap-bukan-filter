@@ -9,7 +9,7 @@ A small profile-picture studio to keep Indonesia's forest and land fires (karhut
 - All four palettes use duotone at the default 80% intensity; 100% fully replaces the source colors. Classic colors and Reverse duotone work with every palette. Photos are desaturated before tinting. Lower intensity blends the tint with grayscale, so original hues never leak through; 0% is black and white. Smoke veil layers deterministic, soft, uneven smoke over neutral charcoal tones, keeping the central portrait area clearer. Classic softens the veil; Reverse switches to dark smoke over reversed tones. Smoke intensity controls both the base duotone and cloud opacity. The cloud field is generated locally and stays identical between preview and PNG export. View original shows the unedited colors.
 - Adjust intensity, zoom and framing; compare against the original.
 - Preview the circular profile crop; optionally add your own text (off by default, up to 80 characters, automatically wrapped).
-- Download a 1080 × 1080 PNG and copy an Indonesian campaign caption.
+- Save a 1080 × 1080 PNG through a native file-share menu (when supported), a download link, or a real image preview for touch-and-hold saving. Copy an Indonesian campaign caption.
 - Responsive layout, keyboard controls, privacy/about dialog and labeled future ad space.
 
 Images stay in browser memory. Exports are newly encoded PNGs without the source file's metadata. Nothing automatically posts to or changes a social account. The demo is an original SVG illustration, not a photograph of actual haze.
@@ -69,6 +69,14 @@ The colors are artistic interpretations, not measurements or a visualization of 
 ## Verification
 
 Automated checks cover deterministic cloud rendering, clearer-center smoke coverage, Classic/Reverse smoke behavior, full recoloring, classic and reverse modes across every palette, zero-intensity grayscale, alpha preservation, caption wrapping, and crop bounds across landscape, portrait and square sources. Browser verification completed: PNG upload, smoke-grey selection, intensity and crop controls, original comparison, circle guide, campaign overlay, PNG download, caption copying, privacy dialog and 390-pixel mobile layout. The downloaded PNG was verified as 1080 × 1080. The new pink/green default preview was visually checked; its classic/reverse variants are covered by automated checks. A browser permission block prevented completing the new interactive export retest. Automated tests cover all four palettes; HEIC conversion, every browser/device and ad-network integration are not tested.
+
+## Saving in Instagram and other in-app browsers
+
+The save button prepares the PNG and opens a preview with a real image element. A separate tap invokes native file sharing only when `navigator.canShare({files})` reports support; PNG generation does not consume the share tap's transient activation. Download PNG is also an explicit user tap. Cancelling a share does not initiate another action or claim the photo was saved.
+
+The image uses a local data URL, supporting touch-and-hold menus without depending on blob URL navigation. The app never suppresses the image context menu. A help section explains opening the page in Safari or Chrome and provides a copyable page URL. Photos are not uploaded or transferred to another browser; users may need to upload again there.
+
+Instagram and operating-system versions control whether native sharing, downloads, and image menus are exposed. A webpage cannot force a host app to save to Photos. Test the flow on actual iOS and Android Instagram versions; desktop tests do not reproduce their webview restrictions. See [MDN Web Share](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/share) for the activation requirement.
 
 ## License
 
