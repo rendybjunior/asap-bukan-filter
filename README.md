@@ -6,7 +6,7 @@ A small profile-picture studio to keep Indonesia's forest and land fires (karhut
 
 - Open a JPG, PNG or WebP locally, up to 20 MB and 50 megapixels.
 - Choose Apocalyptic orange, Industrial smoke grey, IHSG red, or Brave pink × Hero green.
-- All four palettes fully recolor the image using duotone at the default 100% intensity. Classic colors and Reverse duotone work with every palette. Lower intensity blends the source photo back in.
+- All four palettes use duotone at the default 80% intensity; 100% fully replaces the source colors. Classic colors and Reverse duotone work with every palette. Lower intensity blends the source photo back in.
 - Adjust intensity, zoom and framing; compare against the original.
 - Preview the circular profile crop; optionally add your own text (off by default, up to 80 characters, automatically wrapped).
 - Download a 1080 × 1080 PNG and copy an Indonesian campaign caption.
