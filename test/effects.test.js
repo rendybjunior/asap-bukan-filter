@@ -8,19 +8,22 @@ test('zero intensity preserves the original including transparent pixels', () =>
   applyHaze(data, 2, 1, presets.orange, 0);
   assert.deepEqual(data, before);
 });
-test('all four palettes produce distinct results and preserve alpha', () => {
+test('all haze palettes produce distinct results and preserve alpha', () => {
   const outputs = Object.values(presets).filter((preset) => preset.type !== 'duotone').map((preset) => {
     const data = new Uint8ClampedArray([32, 100, 180, 200]);
     applyHaze(data, 1, 1, preset, 0.7);
     assert.equal(data[3], 200);
     return [...data].join(',');
   });
-  assert.equal(new Set(outputs).size, 4);
+  assert.equal(new Set(outputs).size, 3);
 });
-test('orange shifts neutral pixels toward orange, smoke grey removes most chroma', () => {
+test('warm palettes shift neutral pixels to their colors, smoke grey removes most chroma', () => {
   const orange = new Uint8ClampedArray([100, 100, 100, 255]);
   applyHaze(orange, 1, 1, presets.orange, 1);
   assert.ok(orange[0] > orange[1] && orange[1] > orange[2]);
+  const red = new Uint8ClampedArray([100, 100, 100, 255]);
+  applyHaze(red, 1, 1, presets.ihsg, 1);
+  assert.ok(red[0] > red[1] * 2 && red[0] > red[2] * 2);
   const grey = new Uint8ClampedArray([255, 0, 0, 255]);
   applyHaze(grey, 1, 1, presets.grey, 1);
   assert.ok(Math.max(...grey.slice(0, 3)) - Math.min(...grey.slice(0, 3)) < 15);

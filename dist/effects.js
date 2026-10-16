@@ -1,9 +1,8 @@
 export const presets = Object.freeze({
   orange: { name: 'Apocalyptic orange', number: '01', tint: [247, 133, 41], saturation: 0.38, haze: 0.38 },
   grey: { name: 'Industrial smoke grey', number: '02', tint: [166, 172, 165], saturation: 0.03, haze: 0.49 },
-  peat: { name: 'Peatland sepia', number: '03', tint: [183, 151, 99], saturation: 0.18, haze: 0.4 },
-  ash: { name: 'Afterburn blue', number: '04', tint: [147, 173, 185], saturation: 0.12, haze: 0.43 },
-  pinkGreen: { name: 'Brave pink × Hero green', number: '05', type: 'duotone' },
+  ihsg: { name: 'IHSG red', number: '03', tint: [220, 34, 52], saturation: 0.08, haze: 0.44 },
+  pinkGreen: { name: 'Brave pink × Hero green', number: '04', type: 'duotone' },
 });
 
 // Color pairs observed in the user-provided Brave Pink Hero Green reference.

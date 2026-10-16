@@ -5,7 +5,7 @@ A small profile-picture studio to keep Indonesia's forest and land fires (karhut
 ## What works
 
 - Open a JPG, PNG or WebP locally, up to 20 MB and 50 megapixels.
-- Choose Apocalyptic orange, Industrial smoke grey, Peatland sepia, Afterburn blue, or Brave pink × Hero green.
+- Choose Apocalyptic orange, Industrial smoke grey, IHSG red, or Brave pink × Hero green.
 - The pink/green duotone includes higher-contrast and classic color pairs, a reverse switch, and its own remembered intensity. Haze and duotone settings stay separate.
 - Adjust intensity, zoom and framing; compare against the original.
 - Preview the circular profile crop; optionally add a campaign message.
@@ -68,7 +68,7 @@ The colors are artistic interpretations, not measurements or a visualization of 
 
 ## Verification
 
-Automated checks cover zero-intensity identity, palette differences, alpha preservation, color behavior, and crop bounds across landscape, portrait and square sources. Browser verification completed: PNG upload, smoke-grey selection, intensity and crop controls, original comparison, circle guide, campaign overlay, PNG download, caption copying, privacy dialog and 390-pixel mobile layout. The downloaded PNG was verified as 1080 × 1080. The new pink/green default preview was visually checked; its classic/reverse variants are covered by automated checks. A browser permission block prevented completing the new interactive export retest. Automated tests cover all five palettes; HEIC conversion, every browser/device and ad-network integration are not tested.
+Automated checks cover zero-intensity identity, palette differences, alpha preservation, color behavior, and crop bounds across landscape, portrait and square sources. Browser verification completed: PNG upload, smoke-grey selection, intensity and crop controls, original comparison, circle guide, campaign overlay, PNG download, caption copying, privacy dialog and 390-pixel mobile layout. The downloaded PNG was verified as 1080 × 1080. The new pink/green default preview was visually checked; its classic/reverse variants are covered by automated checks. A browser permission block prevented completing the new interactive export retest. Automated tests cover all four palettes; HEIC conversion, every browser/device and ad-network integration are not tested.
 
 ## License
 
