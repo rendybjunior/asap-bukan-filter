@@ -4,12 +4,41 @@ import { presets, cropRect, applyDuotone } from '../dist/effects.js';
 
 const duotoneColors = presets.pinkGreen.colors;
 
-test('zero intensity preserves the source and alpha for every palette', () => {
+test('smoke grey removes all source chroma at every intensity and option', () => {
+  for (const intensity of [0, 0.2, 0.8, 1]) {
+    for (const classic of [false, true]) for (const reverse of [false, true]) {
+      const data = new Uint8ClampedArray([255, 0, 0, 255, 0, 255, 0, 128, 0, 0, 255, 255]);
+      applyDuotone(data, intensity, { palette: presets.grey, classic, reverse });
+      for (let i = 0; i < data.length; i += 4) {
+        assert.equal(data[i], data[i + 1]);
+        assert.equal(data[i], data[i + 2]);
+      }
+      assert.equal(data[7], 128);
+    }
+  }
+});
+
+test('80% tint behaves the same for colorful and pre-desaturated photos', () => {
+  const source = [220, 20, 40, 255, 20, 180, 30, 255, 30, 40, 210, 255];
+  const grey = new Uint8ClampedArray(source);
+  for (let i = 0; i < grey.length; i += 4) {
+    const value = Math.round(source[i] * 0.2126 + source[i + 1] * 0.7152 + source[i + 2] * 0.0722);
+    grey[i] = grey[i + 1] = grey[i + 2] = value;
+  }
   for (const palette of Object.values(presets)) {
-    const data = new Uint8ClampedArray([240, 122, 33, 255, 30, 90, 200, 0]);
-    const before = data.slice();
+    const fromColor = new Uint8ClampedArray(source);
+    const fromGrey = grey.slice();
+    applyDuotone(fromColor, 0.8, { palette });
+    applyDuotone(fromGrey, 0.8, { palette });
+    fromColor.forEach((value, i) => assert.ok(Math.abs(value - fromGrey[i]) <= 1));
+  }
+});
+
+test('zero intensity converts the source to grayscale and preserves alpha', () => {
+  for (const palette of Object.values(presets)) {
+    const data = new Uint8ClampedArray([255, 0, 0, 255, 0, 255, 0, 128, 30, 90, 200, 0]);
     applyDuotone(data, 0, { palette });
-    assert.deepEqual(data, before);
+    assert.deepEqual([...data], [54, 54, 54, 255, 182, 182, 182, 128, 30, 90, 200, 0]);
   }
 });
 test('every palette fully maps shadows and highlights in classic and reverse modes', () => {
@@ -72,7 +101,7 @@ test('reverse duotone swaps shadows and highlights in both color modes', () => {
   }
 });
 
-test('duotone zero intensity preserves source and partial intensity blends', () => {
+test('neutral source is preserved at zero and partial intensity blends with grayscale', () => {
   const before = ramp();
   const zero = before.slice();
   applyDuotone(zero, 0, { reverse: true });

@@ -5,8 +5,8 @@ export const presets = Object.freeze({
     classic: { shadow: [110, 41, 14], highlight: [255, 177, 73] },
   } },
   grey: { name: 'Industrial smoke grey', number: '02', colorLabel: 'grey', shadowName: 'Charcoal', highlightName: 'Smoke grey', colors: {
-    contrast: { shadow: [30, 36, 39], highlight: [220, 225, 224] },
-    classic: { shadow: [73, 78, 78], highlight: [186, 192, 188] },
+    contrast: { shadow: [20, 20, 20], highlight: [230, 230, 230] },
+    classic: { shadow: [60, 60, 60], highlight: [195, 195, 195] },
   } },
   ihsg: { name: 'IHSG red', number: '03', colorLabel: 'red', shadowName: 'Deep red', highlightName: 'Bright red', colors: {
     contrast: { shadow: [69, 3, 20], highlight: [255, 58, 77] },
@@ -29,11 +29,10 @@ export function cropRect(width, height, zoom = 1, panX = 0, panY = 0) {
 }
 
 // Stretch the visible luminance range, shape contrast, then map it between two
-// colors. Intensity blends that result with the source; transparent pixels do
+// colors. Intensity blends that result with a grayscale base; transparent pixels do
 // not influence the image's tonal range.
 export function applyDuotone(data, intensity = 1, { classic = false, reverse = false, palette = presets.pinkGreen } = {}) {
   const amount = clamp(intensity, 0, 1);
-  if (amount === 0) return data;
   let darkest = Infinity;
   let lightest = -Infinity;
   const luminance = (i) => data[i] * 0.2126 + data[i + 1] * 0.7152 + data[i + 2] * 0.0722;
@@ -56,7 +55,7 @@ export function applyDuotone(data, intensity = 1, { classic = false, reverse = f
       : 1 - 0.5 * (2 * (1 - normalized)) ** 1.8;
     for (let channel = 0; channel < 3; channel++) {
       const mapped = shadow[channel] + (highlight[channel] - shadow[channel]) * tone;
-      data[i + channel] = Math.round(data[i + channel] * (1 - amount) + mapped * amount);
+      data[i + channel] = Math.round(light * (1 - amount) + mapped * amount);
     }
   }
   return data;
