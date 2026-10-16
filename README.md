@@ -7,13 +7,13 @@ A small profile-picture studio to keep Indonesia's forest and land fires (karhut
 - Open a JPG, PNG or WebP locally, up to 20 MB and 50 megapixels.
 - Choose Kuning Pedih, Abu Sesak, Merah IHSG, or Brave Pink x Hero Green.
 - All four palettes use duotone at the default 80% intensity; 100% fully replaces the source colors. Classic colors and Reverse duotone work with every palette. Photos are desaturated before tinting. Lower intensity blends the tint with grayscale, so original hues never leak through; 0% is black and white. Abu Sesak layers deterministic, soft, uneven smoke over neutral charcoal tones, keeping the central portrait area clearer. Classic softens the veil; Reverse switches to dark smoke over reversed tones. Smoke intensity controls both the base duotone and cloud opacity. The cloud field is generated locally and stays identical between preview and PNG export. View original shows the unedited colors.
-- Compare all four effects through live portrait thumbnails in the existing palette rows. They use the illustration before upload and your photo afterward, and update with intensity, Classic, Reverse, and crop controls.
+- Compare all four effects through live portrait thumbnails in the existing palette rows. They use the supplied street photo before upload and your photo afterward, and update with intensity, Classic, Reverse, and crop controls.
 - Adjust intensity, zoom and framing; compare against the original.
 - Preview the circular profile crop; optionally add your own text (off by default, up to 80 characters, automatically wrapped).
 - Save a 1080 × 1080 PNG through a native file-share menu (when supported), a download link, or a real image preview for touch-and-hold saving. Copy an Indonesian campaign caption.
 - Responsive layout, keyboard controls, privacy/about dialog and labeled future ad space.
 
-Images stay in browser memory. Exports are newly encoded PNGs without the source file's metadata. Nothing automatically posts to or changes a social account. The demo is an original SVG illustration, not a photograph of actual haze.
+Images stay in browser memory. Exports are newly encoded PNGs without the source file's metadata. Nothing automatically posts to or changes a social account. The default sample is a user-supplied street photograph (`dist/default-photo.jpg`), displayed as a visual example rather than evidence of current conditions.
 
 ## Run locally
 
@@ -81,4 +81,4 @@ Instagram and operating-system versions control whether native sharing, download
 
 ## License
 
-MIT. Includes the original demo illustration and application code.
+MIT for application code and the original SVG illustration. The user-supplied default photograph is excluded from the MIT grant; its copyright remains with its original rights holder.

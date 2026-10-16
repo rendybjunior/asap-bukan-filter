@@ -259,8 +259,8 @@ $('caption-close').addEventListener('click', () => $('caption-dialog').close());
 const demo = new Image();
 const demoVersion = loadVersion;
 demo.onload = () => { if (!uploaded && loadVersion === demoVersion) { source = demo; render(); } };
-demo.onerror = () => status('The illustrated demo could not load. Upload a photo to begin.', true);
-demo.src = 'demo.svg';
+demo.onerror = () => status('The sample photo could not load. Upload a photo to begin.', true);
+demo.src = 'default-photo.jpg';
 if (!ctx) {
   status('Your browser does not support the photo editor. Please try a recent version of Chrome, Safari, Firefox or Edge.', true);
   $('upload').disabled = true;
